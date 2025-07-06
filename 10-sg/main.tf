@@ -42,6 +42,33 @@ module "mongodb" {
     sg_description = "for mongodb"
     vpc_id = local.vpc_id
 }
+
+module "redis" {
+    source = "git::https://github.com/ChepaYashasvi/terraform-aws-sg?ref=main"
+    project=var.project
+    environment = var.environment
+    sg_name = "redis"
+    sg_description = "for redis"
+    vpc_id = local.vpc_id
+}
+
+module "mysql" {
+    source = "git::https://github.com/ChepaYashasvi/terraform-aws-sg?ref=main"
+    project=var.project
+    environment = var.environment
+    sg_name = "mysql"
+    sg_description = "for mysql"
+    vpc_id = local.vpc_id
+}
+
+module "rabbitmq" {
+    source = "git::https://github.com/ChepaYashasvi/terraform-aws-sg?ref=main"
+    project=var.project
+    environment = var.environment
+    sg_name = "rabbitmq"
+    sg_description = "for rabbitmq"
+    vpc_id = local.vpc_id
+}
 # bastion accepting connections from my laptop
 resource "aws_security_group_rule" "bastion_laptop" {
   type              = "ingress"
@@ -105,4 +132,45 @@ resource "aws_security_group_rule" "backend_alb_vpn" {
   protocol          = "tcp"
   source_security_group_id = module.vpn.sg_id
   security_group_id = module.backend_alb.sg_id
+}
+
+
+resource "aws_security_group_rule" "mongodb_vpn_ssh" {
+  count = length(var.mongodb_ports_vpn)
+  type              = "ingress"
+  from_port         = var.mongodb_ports_vpn[count.index]
+  to_port           = var.mongodb_ports_vpn[count.index]
+  protocol          = "tcp"
+  source_security_group_id = module.vpn.sg_id
+  security_group_id = module.mongodb.sg_id
+}
+
+resource "aws_security_group_rule" "redis_vpn_ssh" {
+  count = length(var.redis_ports_vpn)
+  type              = "ingress"
+  from_port         = var.redis_ports_vpn[count.index]
+  to_port           = var.redis_ports_vpn[count.index]
+  protocol          = "tcp"
+  source_security_group_id = module.vpn.sg_id
+  security_group_id = module.redis.sg_id
+}
+
+resource "aws_security_group_rule" "mysql_vpn_ssh" {
+  count = length(var.mysql_ports_vpn)
+  type              = "ingress"
+  from_port         = var.mysql_ports_vpn[count.index]
+  to_port           = var.mysql_ports_vpn[count.index]
+  protocol          = "tcp"
+  source_security_group_id = module.vpn.sg_id
+  security_group_id = module.mysql.sg_id
+}
+
+resource "aws_security_group_rule" "rabbitmq_vpn_ssh" {
+  count = length(var.rabbitmq_ports_vpn)
+  type              = "ingress"
+  from_port         = var.rabbitmq_ports_vpn[count.index]
+  to_port           = var.rabbitmq_ports_vpn[count.index]
+  protocol          = "tcp"
+  source_security_group_id = module.vpn.sg_id
+  security_group_id = module.rabbitmq.sg_id
 }
